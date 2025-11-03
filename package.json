@@ -1,0 +1,25 @@
+{
+  "name": "primera-entrega-backend",
+  "version": "1.0.0",
+  "description": "Primera entrega del proyecto final - Backend Coderhouse",
+  "main": "src/app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": [
+    "ecommerce",
+    "api",
+    "express",
+    "backend"
+  ],
+  "author": "Tu Nombre",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
