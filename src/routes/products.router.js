@@ -4,7 +4,6 @@ import ProductManager from '../managers/ProductManager.js';
 const router = Router();
 const productManager = new ProductManager('./src/data/products.json');
 
-
 router.get('/', async (req, res) => {
   try {
     const products = await productManager.getProducts();
@@ -19,7 +18,6 @@ router.get('/', async (req, res) => {
     });
   }
 });
-
 
 router.get('/:pid', async (req, res) => {
   try {
@@ -45,11 +43,15 @@ router.get('/:pid', async (req, res) => {
   }
 });
 
-
 router.post('/', async (req, res) => {
   try {
     const productData = req.body;
     const newProduct = await productManager.addProduct(productData);
+    
+   
+    const io = req.app.get('io');
+    const products = await productManager.getProducts();
+    io.emit('updateProducts', products);
     
     res.status(201).json({
       status: 'success',
@@ -72,6 +74,11 @@ router.put('/:pid', async (req, res) => {
     
     const updatedProduct = await productManager.updateProduct(pid, updates);
     
+    
+    const io = req.app.get('io');
+    const products = await productManager.getProducts();
+    io.emit('updateProducts', products);
+    
     res.json({
       status: 'success',
       message: 'Producto actualizado exitosamente',
@@ -90,6 +97,11 @@ router.delete('/:pid', async (req, res) => {
   try {
     const { pid } = req.params;
     const deletedProduct = await productManager.deleteProduct(pid);
+    
+    
+    const io = req.app.get('io');
+    const products = await productManager.getProducts();
+    io.emit('updateProducts', products);
     
     res.json({
       status: 'success',

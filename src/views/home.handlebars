@@ -1,0 +1,54 @@
+<div class="page-header">
+    <h2>📦 Lista de Productos</h2>
+    <p>Vista estática de todos los productos disponibles</p>
+</div>
+
+{{#if error}}
+    <div class="alert alert-error">
+        <p>{{error}}</p>
+    </div>
+{{/if}}
+
+{{#if hasProducts}}
+    <div class="products-grid">
+        {{#each products}}
+            <div class="product-card">
+                <div class="product-header">
+                    <h3>{{this.title}}</h3>
+                    <span class="product-id">ID: {{this.id}}</span>
+                </div>
+                <p class="product-description">{{this.description}}</p>
+                <div class="product-details">
+                    <p><strong>Código:</strong> {{this.code}}</p>
+                    <p><strong>Categoría:</strong> {{this.category}}</p>
+                    <p><strong>Precio:</strong> ${{this.price}}</p>
+                    <p><strong>Stock:</strong> {{this.stock}} unidades</p>
+                    <p><strong>Estado:</strong> 
+                        {{#if this.status}}
+                            <span class="badge badge-success">Disponible</span>
+                        {{else}}
+                            <span class="badge badge-error">No disponible</span>
+                        {{/if}}
+                    </p>
+                </div>
+                {{#if this.thumbnails}}
+                    {{#if this.thumbnails.length}}
+                        <div class="product-images">
+                            <p><strong>Imágenes:</strong></p>
+                            <ul>
+                                {{#each this.thumbnails}}
+                                    <li>{{this}}</li>
+                                {{/each}}
+                            </ul>
+                        </div>
+                    {{/if}}
+                {{/if}}
+            </div>
+        {{/each}}
+    </div>
+{{else}}
+    <div class="alert alert-info">
+        <p>No hay productos disponibles en este momento.</p>
+        <p>Puedes agregar productos usando la API en <code>/api/products</code></p>
+    </div>
+{{/if}}

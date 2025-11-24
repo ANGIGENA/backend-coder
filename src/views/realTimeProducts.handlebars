@@ -1,0 +1,84 @@
+<div class="page-header">
+    <h2>⚡ Productos en Tiempo Real</h2>
+    <p>Los productos se actualizan automáticamente usando WebSockets</p>
+</div>
+
+
+<div class="form-container">
+    <h3>➕ Agregar Nuevo Producto</h3>
+    <form id="addProductForm">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="title">Título *</label>
+                <input type="text" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="code">Código *</label>
+                <input type="text" id="code" name="code" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Descripción *</label>
+            <textarea id="description" name="description" rows="3" required></textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="price">Precio *</label>
+                <input type="number" id="price" name="price" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="stock">Stock *</label>
+                <input type="number" id="stock" name="stock" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="category">Categoría *</label>
+            <input type="text" id="category" name="category" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Agregar Producto</button>
+    </form>
+</div>
+
+
+<div id="productsContainer">
+    {{#if hasProducts}}
+        <div class="products-grid" id="productsGrid">
+            {{#each products}}
+                <div class="product-card" data-id="{{this.id}}">
+                    <div class="product-header">
+                        <h3>{{this.title}}</h3>
+                        <span class="product-id">ID: {{this.id}}</span>
+                    </div>
+                    <p class="product-description">{{this.description}}</p>
+                    <div class="product-details">
+                        <p><strong>Código:</strong> {{this.code}}</p>
+                        <p><strong>Categoría:</strong> {{this.category}}</p>
+                        <p><strong>Precio:</strong> ${{this.price}}</p>
+                        <p><strong>Stock:</strong> {{this.stock}} unidades</p>
+                        <p><strong>Estado:</strong> 
+                            {{#if this.status}}
+                                <span class="badge badge-success">Disponible</span>
+                            {{else}}
+                                <span class="badge badge-error">No disponible</span>
+                            {{/if}}
+                        </p>
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteProduct({{this.id}})">
+                        🗑️ Eliminar
+                    </button>
+                </div>
+            {{/each}}
+        </div>
+    {{else}}
+        <div class="alert alert-info" id="noProductsAlert">
+            <p>No hay productos disponibles. ¡Agrega el primero usando el formulario!</p>
+        </div>
+    {{/if}}
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/realTimeProducts.js"></script>

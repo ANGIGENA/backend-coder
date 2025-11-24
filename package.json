@@ -1,7 +1,7 @@
 {
   "name": "primera-entrega-backend",
-  "version": "1.0.0",
-  "description": "Primera entrega del proyecto final - Backend Coderhouse",
+  "version": "2.0.0",
+  "description": "Segunda entrega del proyecto final - Backend Coderhouse con Handlebars y WebSockets",
   "main": "src/app.js",
   "type": "module",
   "scripts": {
@@ -12,12 +12,16 @@
     "ecommerce",
     "api",
     "express",
-    "backend"
+    "backend",
+    "websockets",
+    "handlebars"
   ],
   "author": "Tu Nombre",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "express-handlebars": "^7.1.2",
+    "socket.io": "^4.7.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
