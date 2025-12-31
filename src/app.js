@@ -3,9 +3,11 @@ import { create } from 'express-handlebars';
 import { Server } from 'socket.io';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { connectDB } from './config/database.js';
 import productsRouter from './routes/products.router.js';
 import cartsRouter from './routes/carts.router.js';
 import viewsRouter from './routes/views.router.js';
+import { ProductModel } from './models/product.model.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -14,10 +16,18 @@ const app = express();
 const PORT = 8080;
 
 
+connectDB();
+
+
 const hbs = create({
   extname: '.handlebars',
   defaultLayout: 'main',
   layoutsDir: __dirname + '/views/layouts',
+  helpers: {
+    multiply: (a, b) => a * b,
+    eq: (a, b) => a === b,
+    or: (a, b) => a || b
+  }
 });
 
 app.engine('handlebars', hbs.engine);
@@ -42,7 +52,9 @@ app.get('/api', (req, res) => {
       products: '/api/products',
       carts: '/api/carts',
       views: {
-        home: '/',
+        products: '/products',
+        productDetail: '/products/:pid',
+        cart: '/carts/:cid',
         realTimeProducts: '/realtimeproducts'
       }
     }
@@ -59,9 +71,9 @@ app.use((req, res) => {
 
 
 const httpServer = app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
-  console.log(`Endpoints disponibles:`);
-  console.log(`  API:`);
+  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`📁 Endpoints disponibles:`);
+  console.log(`\n  API REST:`);
   console.log(`    - GET    /api/products`);
   console.log(`    - GET    /api/products/:pid`);
   console.log(`    - POST   /api/products`);
@@ -70,8 +82,14 @@ const httpServer = app.listen(PORT, () => {
   console.log(`    - POST   /api/carts`);
   console.log(`    - GET    /api/carts/:cid`);
   console.log(`    - POST   /api/carts/:cid/product/:pid`);
-  console.log(`  Vistas:`);
-  console.log(`    - GET    / (home)`);
+  console.log(`    - DELETE /api/carts/:cid/products/:pid`);
+  console.log(`    - PUT    /api/carts/:cid`);
+  console.log(`    - PUT    /api/carts/:cid/products/:pid`);
+  console.log(`    - DELETE /api/carts/:cid`);
+  console.log(`\n  Vistas:`);
+  console.log(`    - GET    /products (con paginación)`);
+  console.log(`    - GET    /products/:pid (detalle)`);
+  console.log(`    - GET    /carts/:cid (carrito)`);
   console.log(`    - GET    /realtimeproducts`);
 });
 
@@ -83,10 +101,56 @@ app.set('io', io);
 
 
 io.on('connection', (socket) => {
-  console.log('Nuevo cliente conectado:', socket.id);
+  console.log('✅ Nuevo cliente conectado:', socket.id);
+
+
+  ProductModel.find().lean().then(products => {
+    socket.emit('updateProducts', products);
+  });
+
+
+  socket.on('addProduct', async (productData) => {
+    try {
+      const newProduct = await ProductModel.create(productData);
+      
+      const products = await ProductModel.find().lean();
+      io.emit('updateProducts', products);
+      
+      socket.emit('productAdded', {
+        success: true,
+        message: 'Producto agregado exitosamente',
+        product: newProduct
+      });
+    } catch (error) {
+      socket.emit('productError', {
+        success: false,
+        message: error.message
+      });
+    }
+  });
+
+
+  socket.on('deleteProduct', async (productId) => {
+    try {
+      await ProductModel.findByIdAndDelete(productId);
+      
+      const products = await ProductModel.find().lean();
+      io.emit('updateProducts', products);
+      
+      socket.emit('productDeleted', {
+        success: true,
+        message: 'Producto eliminado exitosamente'
+      });
+    } catch (error) {
+      socket.emit('productError', {
+        success: false,
+        message: error.message
+      });
+    }
+  });
 
   socket.on('disconnect', () => {
-    console.log('Cliente desconectado:', socket.id);
+    console.log('❌ Cliente desconectado:', socket.id);
   });
 });
 

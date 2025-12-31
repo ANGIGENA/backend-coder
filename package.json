@@ -1,7 +1,7 @@
 {
-  "name": "primera-entrega-backend",
-  "version": "2.0.0",
-  "description": "Segunda entrega del proyecto final - Backend Coderhouse con Handlebars y WebSockets",
+  "name": "entrega-final-backend",
+  "version": "3.0.0",
+  "description": "Entrega Final - Backend Coderhouse con MongoDB",
   "main": "src/app.js",
   "type": "module",
   "scripts": {
@@ -14,14 +14,17 @@
     "express",
     "backend",
     "websockets",
-    "handlebars"
+    "handlebars",
+    "mongodb"
   ],
   "author": "Tu Nombre",
   "license": "ISC",
   "dependencies": {
     "express": "^4.21.2",
-    "express-handlebars": "^7.1.2",
-    "socket.io": "^4.7.2"
+    "express-handlebars": "^8.0.1",
+    "socket.io": "^4.8.1",
+    "mongoose": "^8.0.0",
+    "mongoose-paginate-v2": "^1.8.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"

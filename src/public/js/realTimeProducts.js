@@ -1,5 +1,6 @@
 const socket = io();
 
+
 const addProductForm = document.getElementById('addProductForm');
 addProductForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -14,56 +15,44 @@ addProductForm.addEventListener('submit', async (e) => {
     status: true
   };
 
-  try {
-    const response = await fetch('/api/products', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(formData)
-    });
 
-    const data = await response.json();
-
-    if (data.status === 'success') {
-      addProductForm.reset();
-      showNotification('Producto agregado exitosamente', 'success');
-    } else {
-      showNotification(data.message || 'Error al agregar producto', 'error');
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    showNotification('Error al agregar producto', 'error');
-  }
+  socket.emit('addProduct', formData);
+  addProductForm.reset();
 });
 
-async function deleteProduct(id) {
+
+function deleteProduct(id) {
   if (!confirm('¿Estás seguro de que deseas eliminar este producto?')) {
     return;
   }
 
-  try {
-    const response = await fetch(`/api/products/${id}`, {
-      method: 'DELETE'
-    });
-
-    const data = await response.json();
-
-    if (data.status === 'success') {
-      showNotification('Producto eliminado exitosamente', 'success');
-    } else {
-      showNotification(data.message || 'Error al eliminar producto', 'error');
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    showNotification('Error al eliminar producto', 'error');
-  }
+  socket.emit('deleteProduct', id);
 }
+
+socket.on('productAdded', (data) => {
+  if (data.success) {
+    showNotification(data.message, 'success');
+  }
+});
+
+
+socket.on('productDeleted', (data) => {
+  if (data.success) {
+    showNotification(data.message, 'success');
+  }
+});
+
+
+socket.on('productError', (data) => {
+  showNotification(data.message, 'error');
+});
+
 
 socket.on('updateProducts', (products) => {
   console.log('Productos actualizados:', products);
   renderProducts(products);
 });
+
 
 function renderProducts(products) {
   const productsContainer = document.getElementById('productsContainer');
@@ -137,6 +126,7 @@ function showNotification(message, type) {
     }, 300);
   }, 3000);
 }
+
 
 const style = document.createElement('style');
 style.textContent = `

@@ -1,16 +1,62 @@
 import { Router } from 'express';
-import ProductManager from '../managers/ProductManager.js';
+import { ProductModel } from '../models/product.model.js';
 
 const router = Router();
-const productManager = new ProductManager('./src/data/products.json');
+
 
 router.get('/', async (req, res) => {
   try {
-    const products = await productManager.getProducts();
-    res.json({
+    const { limit = 10, page = 1, sort, query } = req.query;
+
+
+    const filter = {};
+    if (query) {
+
+      if (query === 'available') {
+        filter.stock = { $gt: 0 };
+      } else {
+        filter.category = query;
+      }
+    }
+
+
+    const sortOption = {};
+    if (sort === 'asc') {
+      sortOption.price = 1;
+    } else if (sort === 'desc') {
+      sortOption.price = -1;
+    }
+
+
+    const options = {
+      limit: parseInt(limit),
+      page: parseInt(page),
+      sort: sortOption,
+      lean: true
+    };
+
+
+    const result = await ProductModel.paginate(filter, options);
+
+
+    const response = {
       status: 'success',
-      payload: products
-    });
+      payload: result.docs,
+      totalPages: result.totalPages,
+      prevPage: result.prevPage,
+      nextPage: result.nextPage,
+      page: result.page,
+      hasPrevPage: result.hasPrevPage,
+      hasNextPage: result.hasNextPage,
+      prevLink: result.hasPrevPage 
+        ? `/api/products?limit=${limit}&page=${result.prevPage}${sort ? `&sort=${sort}` : ''}${query ? `&query=${query}` : ''}`
+        : null,
+      nextLink: result.hasNextPage 
+        ? `/api/products?limit=${limit}&page=${result.nextPage}${sort ? `&sort=${sort}` : ''}${query ? `&query=${query}` : ''}`
+        : null
+    };
+
+    res.json(response);
   } catch (error) {
     res.status(500).json({
       status: 'error',
@@ -19,10 +65,11 @@ router.get('/', async (req, res) => {
   }
 });
 
+
 router.get('/:pid', async (req, res) => {
   try {
     const { pid } = req.params;
-    const product = await productManager.getProductById(pid);
+    const product = await ProductModel.findById(pid);
     
     if (!product) {
       return res.status(404).json({
@@ -43,14 +90,15 @@ router.get('/:pid', async (req, res) => {
   }
 });
 
+
 router.post('/', async (req, res) => {
   try {
     const productData = req.body;
-    const newProduct = await productManager.addProduct(productData);
+    const newProduct = await ProductModel.create(productData);
     
-   
+
     const io = req.app.get('io');
-    const products = await productManager.getProducts();
+    const products = await ProductModel.find().lean();
     io.emit('updateProducts', products);
     
     res.status(201).json({
@@ -72,11 +120,25 @@ router.put('/:pid', async (req, res) => {
     const { pid } = req.params;
     const updates = req.body;
     
-    const updatedProduct = await productManager.updateProduct(pid, updates);
+
+    delete updates._id;
     
+    const updatedProduct = await ProductModel.findByIdAndUpdate(
+      pid,
+      updates,
+      { new: true, runValidators: true }
+    );
     
+    if (!updatedProduct) {
+      return res.status(404).json({
+        status: 'error',
+        message: `Producto con id ${pid} no encontrado`
+      });
+    }
+    
+
     const io = req.app.get('io');
-    const products = await productManager.getProducts();
+    const products = await ProductModel.find().lean();
     io.emit('updateProducts', products);
     
     res.json({
@@ -96,11 +158,18 @@ router.put('/:pid', async (req, res) => {
 router.delete('/:pid', async (req, res) => {
   try {
     const { pid } = req.params;
-    const deletedProduct = await productManager.deleteProduct(pid);
+    const deletedProduct = await ProductModel.findByIdAndDelete(pid);
     
+    if (!deletedProduct) {
+      return res.status(404).json({
+        status: 'error',
+        message: `Producto con id ${pid} no encontrado`
+      });
+    }
     
+
     const io = req.app.get('io');
-    const products = await productManager.getProducts();
+    const products = await ProductModel.find().lean();
     io.emit('updateProducts', products);
     
     res.json({

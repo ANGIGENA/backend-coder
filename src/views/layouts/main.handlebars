@@ -11,8 +11,9 @@
         <div class="container">
             <h1>🛒 E-commerce Backend</h1>
             <ul class="nav-links">
-                <li><a href="/">Home</a></li>
-                <li><a href="/realtimeproducts">Productos en Tiempo Real</a></li>
+                <li><a href="/products">Productos</a></li>
+                <li><a href="/realtimeproducts">Tiempo Real</a></li>
+                <li><a href="#" onclick="goToCart()">🛒 Mi Carrito</a></li>
             </ul>
         </div>
     </nav>
@@ -22,7 +23,19 @@
     </main>
 
     <footer class="footer">
-        <p>&copy; 2024 E-commerce - Coderhouse Backend</p>
+        <p>&copy; 2024 E-commerce - Coderhouse Backend - Entrega Final</p>
     </footer>
+
+    <script>
+       
+        function goToCart() {
+            const cartId = localStorage.getItem('cartId');
+            if (cartId) {
+                window.location.href = `/carts/${cartId}`;
+            } else {
+                alert('No tienes un carrito activo. ¡Agrega productos para crear uno!');
+            }
+        }
+    </script>
 </body>
 </html>

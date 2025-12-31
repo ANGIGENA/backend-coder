@@ -1,0 +1,150 @@
+<div class="breadcrumb">
+    <a href="/products">← Volver a productos</a>
+</div>
+
+{{#if error}}
+    <div class="alert alert-error">
+        <p>{{error}}</p>
+    </div>
+{{else}}
+    <div class="product-detail-container">
+        
+        <div class="product-image-section">
+            {{#if product.thumbnails.length}}
+                <img src="{{product.thumbnails.[0]}}" alt="{{product.title}}" class="product-main-image">
+            {{else}}
+                <div class="product-no-image">
+                    <span>📦</span>
+                    <p>Sin imagen</p>
+                </div>
+            {{/if}}
+        </div>
+
+        
+        <div class="product-info-section">
+            <h1 class="product-title">{{product.title}}</h1>
+            
+            <div class="product-category-badge">
+                <span class="badge badge-info">{{product.category}}</span>
+            </div>
+
+            <div class="product-price-section">
+                <h2 class="product-price">${{product.price}}</h2>
+            </div>
+
+            <div class="product-status">
+                {{#if product.status}}
+                    <span class="badge badge-success">✓ Disponible</span>
+                    <span class="product-stock">Stock: {{product.stock}} unidades</span>
+                {{else}}
+                    <span class="badge badge-error">✗ Agotado</span>
+                {{/if}}
+            </div>
+
+            <div class="product-description-section">
+                <h3>Descripción</h3>
+                <p>{{product.description}}</p>
+            </div>
+
+            <div class="product-details-list">
+                <h3>Detalles del producto</h3>
+                <ul>
+                    <li><strong>Código:</strong> {{product.code}}</li>
+                    <li><strong>Categoría:</strong> {{product.category}}</li>
+                    <li><strong>Stock disponible:</strong> {{product.stock}}</li>
+                </ul>
+            </div>
+
+            <div class="product-actions-detail">
+                {{#if product.status}}
+                    <div class="quantity-selector">
+                        <label for="quantity">Cantidad:</label>
+                        <input type="number" id="quantity" value="1" min="1" max="{{product.stock}}">
+                    </div>
+                    <button class="btn btn-primary btn-large" onclick="addToCart('{{product._id}}')">
+                        🛒 Agregar al Carrito
+                    </button>
+                {{else}}
+                    <button class="btn btn-secondary btn-large" disabled>
+                        Producto no disponible
+                    </button>
+                {{/if}}
+            </div>
+        </div>
+    </div>
+{{/if}}
+
+<script>
+async function addToCart(productId) {
+    try {
+        const quantity = parseInt(document.getElementById('quantity').value);
+        
+        
+        let cartId = localStorage.getItem('cartId');
+        
+        if (!cartId) {
+            const response = await fetch('/api/carts', {
+                method: 'POST'
+            });
+            const data = await response.json();
+            cartId = data.payload._id;
+            localStorage.setItem('cartId', cartId);
+        }
+        
+        
+        for (let i = 0; i < quantity; i++) {
+            await fetch(`/api/carts/${cartId}/product/${productId}`, {
+                method: 'POST'
+            });
+        }
+        
+        showNotification(`${quantity} producto(s) agregado(s) al carrito`, 'success');
+        
+        
+        document.getElementById('quantity').value = 1;
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Error al agregar producto al carrito', 'error');
+    }
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+        ${type === 'success' ? 'background: #10b981;' : 'background: #ef4444;'}
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3000);
+}
+
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(400px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(400px); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+</script>
