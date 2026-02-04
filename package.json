@@ -1,7 +1,7 @@
 {
   "name": "entrega-final-backend",
-  "version": "3.0.0",
-  "description": "Entrega Final - Backend Coderhouse con MongoDB",
+  "version": "4.0.0",
+  "description": "Entrega con Sistema de Autenticación - Backend Coderhouse",
   "main": "src/app.js",
   "type": "module",
   "scripts": {
@@ -15,7 +15,10 @@
     "backend",
     "websockets",
     "handlebars",
-    "mongodb"
+    "mongodb",
+    "jwt",
+    "passport",
+    "authentication"
   ],
   "author": "Tu Nombre",
   "license": "ISC",
@@ -24,7 +27,14 @@
     "express-handlebars": "^8.0.1",
     "socket.io": "^4.8.1",
     "mongoose": "^8.0.0",
-    "mongoose-paginate-v2": "^1.8.0"
+    "mongoose-paginate-v2": "^1.8.0",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "cookie-parser": "^1.4.6",
+    "dotenv": "^16.3.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
